@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using System.Web.OData;
-using System.Web.OData.Extensions;
-using Abp.Configuration.Startup;
+using Abp.Collections.Extensions;
 using Abp.Dependency;
 using Abp.Modules;
 using Abp.WebApi.OData.Configuration;
@@ -14,22 +13,16 @@ namespace Abp.WebApi.OData
         public override void PreInitialize()
         {
             IocManager.Register<IAbpWebApiODataModuleConfiguration, AbpWebApiODataModuleConfiguration>();
+
+            Configuration.Validation.IgnoredTypes.AddIfNotContains(typeof(Delta));
         }
 
         public override void Initialize()
         {
             IocManager.Register<MetadataController>(DependencyLifeStyle.Transient);
             IocManager.RegisterAssemblyByConvention(Assembly.GetExecutingAssembly());
-        }
 
-        public override void PostInitialize()
-        {
-            Configuration.Modules.AbpWebApi()
-                .HttpConfiguration.MapODataServiceRoute(
-                    routeName: "ODataRoute",
-                    routePrefix: "odata",
-                    model: Configuration.Modules.AbpWebApiOData().ODataModelBuilder.GetEdmModel()
-                );
+            Configuration.Modules.AbpWebApiOData().MapAction?.Invoke(Configuration);
         }
     }
 }

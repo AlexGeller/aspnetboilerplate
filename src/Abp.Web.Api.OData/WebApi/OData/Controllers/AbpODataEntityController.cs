@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.Controllers;
 using System.Web.OData;
 using Abp.Domain.Entities;
 using Abp.Domain.Repositories;
-using Abp.Domain.Uow;
 
 namespace Abp.WebApi.OData.Controllers
 {
@@ -23,28 +19,15 @@ namespace Abp.WebApi.OData.Controllers
         }
     }
 
-    public abstract class AbpODataEntityController<TEntity, TPrimaryKey> : ODataController
+    public abstract class AbpODataEntityController<TEntity, TPrimaryKey> : AbpODataController
         where TPrimaryKey : IEquatable<TPrimaryKey>
         where TEntity : class, IEntity<TPrimaryKey>
     {
-        public IUnitOfWorkManager UnitOfWorkManager { get; set; }
-
         protected IRepository<TEntity, TPrimaryKey> Repository { get; private set; }
-
-        private IUnitOfWorkCompleteHandle _unitOfWorkCompleteHandler;
-
-        private bool _disposed;
-
+        
         protected AbpODataEntityController(IRepository<TEntity, TPrimaryKey> repository)
         {
             Repository = repository;
-        }
-
-        public override Task<HttpResponseMessage> ExecuteAsync(HttpControllerContext controllerContext, CancellationToken cancellationToken)
-        {
-            _unitOfWorkCompleteHandler = UnitOfWorkManager.Begin();
-
-            return base.ExecuteAsync(controllerContext, cancellationToken);
         }
 
         [EnableQuery]
@@ -68,9 +51,10 @@ namespace Abp.WebApi.OData.Controllers
                 return BadRequest(ModelState);
             }
 
-            await Repository.InsertAndGetIdAsync(entity);
-
-            return Created(entity);
+            var createdEntity = await Repository.InsertAsync(entity);
+            await UnitOfWorkManager.Current.SaveChangesAsync();
+            
+            return Created(createdEntity);
         }
 
         public virtual async Task<IHttpActionResult> Patch([FromODataUri] TPrimaryKey key, Delta<TEntity> entity)
@@ -119,19 +103,6 @@ namespace Abp.WebApi.OData.Controllers
             await Repository.DeleteAsync(key);
 
             return StatusCode(HttpStatusCode.NoContent);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                _unitOfWorkCompleteHandler.Complete();
-                _unitOfWorkCompleteHandler.Dispose();
-            }
-
-            _disposed = true;
-
-            base.Dispose(disposing);
         }
     }
 }

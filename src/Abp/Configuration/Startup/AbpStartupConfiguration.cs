@@ -1,9 +1,13 @@
-﻿using Abp.Application.Features;
+﻿using System;
+using System.Collections.Generic;
+using Abp.Application.Features;
 using Abp.Auditing;
 using Abp.BackgroundJobs;
 using Abp.Dependency;
 using Abp.Domain.Uow;
 using Abp.Events.Bus;
+using Abp.Notifications;
+using Abp.Resources.Embedded;
 using Abp.Runtime.Caching.Configuration;
 
 namespace Abp.Configuration.Startup
@@ -11,9 +15,12 @@ namespace Abp.Configuration.Startup
     /// <summary>
     /// This class is used to configure ABP and modules on startup.
     /// </summary>
-    internal class AbpStartupConfiguration : DictionayBasedConfig, IAbpStartupConfiguration
+    internal class AbpStartupConfiguration : DictionaryBasedConfig, IAbpStartupConfiguration
     {
-        public IIocManager IocManager { get; private set; }
+        /// <summary>
+        /// Reference to the IocManager.
+        /// </summary>
+        public IIocManager IocManager { get; }
 
         /// <summary>
         /// Used to set localization configuration.
@@ -24,6 +31,11 @@ namespace Abp.Configuration.Startup
         /// Used to configure authorization.
         /// </summary>
         public IAuthorizationConfiguration Authorization { get; private set; }
+
+        /// <summary>
+        /// Used to configure validation.
+        /// </summary>
+        public IValidationConfiguration Validation { get; private set; }
 
         /// <summary>
         /// Used to configure settings.
@@ -58,6 +70,11 @@ namespace Abp.Configuration.Startup
         public IBackgroundJobConfiguration BackgroundJobs { get; private set; }
 
         /// <summary>
+        /// Used to configure notification system.
+        /// </summary>
+        public INotificationConfiguration Notifications { get; private set; }
+
+        /// <summary>
         /// Used to configure navigation.
         /// </summary>
         public INavigationConfiguration Navigation { get; private set; }
@@ -79,6 +96,10 @@ namespace Abp.Configuration.Startup
         /// </summary>
         public IMultiTenancyConfig MultiTenancy { get; private set; }
 
+        public Dictionary<Type, Action> ServiceReplaceActions { get; private set; }
+
+        public IEmbeddedResourcesConfiguration EmbeddedResources { get; private set; }
+
         /// <summary>
         /// Private constructor for singleton pattern.
         /// </summary>
@@ -94,6 +115,7 @@ namespace Abp.Configuration.Startup
             Features = IocManager.Resolve<IFeatureConfiguration>();
             Navigation = IocManager.Resolve<INavigationConfiguration>();
             Authorization = IocManager.Resolve<IAuthorizationConfiguration>();
+            Validation = IocManager.Resolve<IValidationConfiguration>();
             Settings = IocManager.Resolve<ISettingsConfiguration>();
             UnitOfWork = IocManager.Resolve<IUnitOfWorkDefaultOptions>();
             EventBus = IocManager.Resolve<IEventBusConfiguration>();
@@ -101,6 +123,20 @@ namespace Abp.Configuration.Startup
             Auditing = IocManager.Resolve<IAuditingConfiguration>();
             Caching = IocManager.Resolve<ICachingConfiguration>();
             BackgroundJobs = IocManager.Resolve<IBackgroundJobConfiguration>();
+            Notifications = IocManager.Resolve<INotificationConfiguration>();
+            EmbeddedResources = IocManager.Resolve<IEmbeddedResourcesConfiguration>();
+
+            ServiceReplaceActions = new Dictionary<Type, Action>();
+        }
+
+        public void ReplaceService(Type type, Action replaceAction)
+        {
+            ServiceReplaceActions[type] = replaceAction;
+        }
+
+        public T Get<T>()
+        {
+            return GetOrCreate(typeof(T).FullName, () => IocManager.Resolve<T>());
         }
     }
 }

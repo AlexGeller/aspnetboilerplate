@@ -1,26 +1,56 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Abp.Domain.Entities;
+using Abp.Domain.Entities.Auditing;
+using Abp.Timing;
 
 namespace Abp.Notifications
 {
+    /// <summary>
+    /// Used to store a user notification.
+    /// </summary>
     [Serializable]
-    public class UserNotificationInfo
+    [Table("AbpUserNotifications")]
+    public class UserNotificationInfo : Entity<Guid>, IHasCreationTime, IMayHaveTenant
     {
-        public long UserId { get; set; }
+        /// <summary>
+        /// Tenant Id.
+        /// </summary>
+        public virtual int? TenantId { get; set; }
 
-        public Guid NotificationId { get; set; }
+        /// <summary>
+        /// User Id.
+        /// </summary>
+        public virtual long UserId { get; set; }
 
-        public UserNotificationState State { get; set; }
+        /// <summary>
+        /// Notification Id.
+        /// </summary>
+        [Required]
+        public virtual Guid TenantNotificationId { get; set; }
+
+        /// <summary>
+        /// Current state of the user notification.
+        /// </summary>
+        public virtual UserNotificationState State { get; set; }
+
+        public virtual DateTime CreationTime { get; set; }
 
         public UserNotificationInfo()
         {
-            State = UserNotificationState.Unread;
+            
         }
 
-        public UserNotificationInfo(long userId, Guid notificationId)
-            : this()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserNotificationInfo"/> class.
+        /// </summary>
+        /// <param name="create"></param>
+        public UserNotificationInfo(Guid id)
         {
-            UserId = userId;
-            NotificationId = notificationId;
+            Id = id;
+            State = UserNotificationState.Unread;
+            CreationTime = Clock.Now;
         }
     }
 }

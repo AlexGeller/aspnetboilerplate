@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Abp.Configuration
@@ -43,6 +44,15 @@ namespace Abp.Configuration
         Task<string> GetSettingValueForUserAsync(string name, int? tenantId, long userId);
 
         /// <summary>
+        /// Gets current value of a setting for a user level.
+        /// It gets the setting value, overwritten by given tenant and user.
+        /// </summary>
+        /// <param name="name">Unique name of the setting</param>
+        /// <param name="user">User</param>
+        /// <returns>Current value of the setting for the user</returns>
+        Task<string> GetSettingValueForUserAsync(string name, UserIdentifier user);
+
+        /// <summary>
         /// Gets current values of all settings.
         /// It gets all setting values, overwritten by application, current tenant (if exists) and the current user (if exists).
         /// </summary>
@@ -82,9 +92,9 @@ namespace Abp.Configuration
         /// If a setting's value is not set for the user (for example if user uses the default value), it's not included the result list.
         /// If you want to get current values of all settings, use <see cref="GetAllSettingValuesAsync()"/> method.
         /// </summary>
-        /// <param name="userId">User to get settings</param>
+        /// <param name="user">User to get settings</param>
         /// <returns>All settings of the user</returns>
-        Task<IReadOnlyList<ISettingValue>> GetAllSettingValuesForUserAsync(long userId);
+        Task<IReadOnlyList<ISettingValue>> GetAllSettingValuesForUserAsync(UserIdentifier user);
 
         /// <summary>
         /// Changes setting for the application level.
@@ -104,9 +114,9 @@ namespace Abp.Configuration
         /// <summary>
         /// Changes setting for a user.
         /// </summary>
-        /// <param name="userId">UserId</param>
+        /// <param name="user">UserId</param>
         /// <param name="name">Unique name of the setting</param>
         /// <param name="value">Value of the setting</param>
-        Task ChangeSettingForUserAsync(long userId, string name, string value);
+        Task ChangeSettingForUserAsync(UserIdentifier user, string name, string value);
     }
 }

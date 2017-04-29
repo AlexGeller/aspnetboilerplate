@@ -58,7 +58,7 @@ namespace Abp.Localization.Dictionaries
         /// <inheritdoc/>
         public string GetString(string name)
         {
-            return GetString(name, Thread.CurrentThread.CurrentUICulture);
+            return GetString(name, CultureInfo.CurrentUICulture);
         }
 
         /// <inheritdoc/>
@@ -68,7 +68,7 @@ namespace Abp.Localization.Dictionaries
 
             if (value == null)
             {
-                return ReturnGivenNameOrThrowException(name);
+                return ReturnGivenNameOrThrowException(name, culture);
             }
 
             return value;
@@ -76,7 +76,7 @@ namespace Abp.Localization.Dictionaries
 
         public string GetStringOrNull(string name, bool tryDefaults = true)
         {
-            return GetStringOrNull(name, Thread.CurrentThread.CurrentUICulture, tryDefaults);
+            return GetStringOrNull(name, CultureInfo.CurrentUICulture, tryDefaults);
         }
 
         public string GetStringOrNull(string name, CultureInfo culture, bool tryDefaults = true)
@@ -133,7 +133,7 @@ namespace Abp.Localization.Dictionaries
         /// <inheritdoc/>
         public IReadOnlyList<LocalizedString> GetAllStrings(bool includeDefaults = true)
         {
-            return GetAllStrings(Thread.CurrentThread.CurrentUICulture, includeDefaults);
+            return GetAllStrings(CultureInfo.CurrentUICulture, includeDefaults);
         }
 
         /// <inheritdoc/>
@@ -194,15 +194,15 @@ namespace Abp.Localization.Dictionaries
             DictionaryProvider.Extend(dictionary);
         }
 
-        protected virtual string ReturnGivenNameOrThrowException(string name)
+        protected virtual string ReturnGivenNameOrThrowException(string name, CultureInfo culture)
         {
-            return LocalizationSourceHelper.ReturnGivenNameOrThrowException(LocalizationConfiguration, Name, name);
+            return LocalizationSourceHelper.ReturnGivenNameOrThrowException(LocalizationConfiguration, Name, name, culture);
         }
 
         private static string GetBaseCultureName(string cultureName)
         {
             return cultureName.Contains("-")
-                ? cultureName.Left(cultureName.IndexOf("-", StringComparison.InvariantCulture))
+                ? cultureName.Left(cultureName.IndexOf("-", StringComparison.Ordinal))
                 : cultureName;
         }
     }

@@ -73,7 +73,7 @@ namespace Abp.MultiTenancy
             await TenantRepository.InsertAsync(tenant);
         }
 
-        public async Task UpdateAsync(TTenant tenant)
+        public virtual async Task UpdateAsync(TTenant tenant)
         {
             if (await TenantRepository.FirstOrDefaultAsync(t => t.TenancyName == tenant.TenancyName && t.Id != tenant.Id) != null)
             {
@@ -205,9 +205,13 @@ namespace Abp.MultiTenancy
         /// Tenant will have features according to it's edition.
         /// </summary>
         /// <param name="tenantId">Tenant Id</param>
-        public async Task ResetAllFeaturesAsync(int tenantId)
+        [UnitOfWork]
+        public virtual async Task ResetAllFeaturesAsync(int tenantId)
         {
-            await TenantFeatureRepository.DeleteAsync(f => f.TenantId == tenantId);
+            using (UnitOfWorkManager.Current.SetTenantId(tenantId))
+            {
+                await TenantFeatureRepository.DeleteAsync(f => f.TenantId == tenantId);
+            }
         }
 
         protected virtual async Task ValidateTenantAsync(TTenant tenant)

@@ -4,7 +4,7 @@ The [Abp.AspNetCore.SignalR](http://www.nuget.org/packages/Abp.AspNetCore.Signal
 package makes it easier to use **ASP.NET Core SignalR** in ASP.NET Boilerplate-based
 applications.
 
-> NOTE: This package is currently in preview. If you have a problem, please write to the Github issues: https://github.com/aspnetboilerplate/aspnetboilerplate/issues/new
+> NOTE: This package is currently in preview. If you have a problem, please write to the GitHub issues: https://github.com/aspnetboilerplate/aspnetboilerplate/issues/new
 
 ### Installation
 
@@ -47,9 +47,9 @@ Then use the **AddSignalR** and **UseSignalR** methods in your Startup class:
 
 #### Client-Side (Angular)
 
-The **@aspnet/signalr** package should be added in package.json, and the signalr.min.js included under **scripts** in .angular-cli.json.
+The **@aspnet/signalr** package should be added in package.json, and the signalr.min.js included under **scripts** in angular.json.
 
-The **abp.signalr-client.js** script should be included under **assets** in .angular-cli.json.
+The **abp.signalr-client.js** script should be included under **assets** in angular.json.
 
 SignalR cannot send authorization headers, so encryptedAuthToken is sent in the query string. The startup template includes SignalRAspNetCoreHelper. We should call it in ngOnInit in app.component.ts:
 
